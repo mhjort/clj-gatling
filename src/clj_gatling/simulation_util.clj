@@ -5,6 +5,7 @@
             [clojure.string :as str])
   (:import [java.io File]
            [java.io StringWriter PrintWriter]
+           [java.time Duration]
            [clj_gatling.simulation_runners FixedRequestNumberRunner DurationRunner]))
 
 (defn create-dir [^String dir]
@@ -94,12 +95,20 @@
          scenarios
          xs)))
 
+(defn- convert-joda-duration-to-java-duration [duration]
+  (-> duration
+      (.toStandardDuration)
+      (.getMillis)
+      (Duration/ofMillis)))
+
 (defn choose-runner [scenarios concurrency options]
   (let [duration (:duration options)
         requests (or (:requests options) (* concurrency (distinct-request-count scenarios)))]
     (if (nil? duration)
       (FixedRequestNumberRunner. requests)
-      (DurationRunner. duration))))
+      (if (instance? Duration duration)
+        (DurationRunner. duration)
+        (DurationRunner. (convert-joda-duration-to-java-duration duration))))))
 
 (defn timestamp-str []
   (let [custom-formatter (f/formatter "yyyyMMddHHmmssSSS")]

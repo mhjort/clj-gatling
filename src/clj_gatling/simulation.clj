@@ -5,9 +5,9 @@
                                                  choose-runner
                                                  log-exception]]
             [schema.core :refer [validate]]
-            [clj-time.local :as local-time]
             [clj-gatling.timers :as timers]
-            [clojure.core.async :as async :refer [go go-loop close! alts! <! >!]]))
+            [clojure.core.async :as async :refer [go go-loop close! alts! <! >!]])
+  (:import (java.time LocalDate)))
 
 (set! *warn-on-reflection* true)
 
@@ -166,7 +166,7 @@
              "using concurrency distribution function"
              ""))
   (validate [schema/RunnableScenario] scenarios)
-  (let [simulation-start (local-time/local-now)
+  (let [simulation-start (LocalDate/now)
         sent-requests (atom 0)
         run-scenario-with-opts (partial run-scenario
                                         (assoc options
